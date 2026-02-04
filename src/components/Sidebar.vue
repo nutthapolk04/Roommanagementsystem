@@ -1,12 +1,22 @@
 <script setup>
-import { LayoutDashboard, PlusCircle, History, Users, Settings, Building2 } from 'lucide-vue-next';
+import {
+  LayoutDashboard,
+  ReceiptText,
+  History,
+  Users,
+  Settings,
+  ChevronRight,
+  ShieldCheck,
+  Building2
+} from 'lucide-vue-next';
 
 const props = defineProps(['modelValue', 'apartmentName']);
 const emit = defineEmits(['update:modelValue']);
 
-const navItems = [
+const menuItems = [
   { id: 'dashboard', label: 'แดชบอร์ด', icon: LayoutDashboard },
-  { id: 'create', label: 'ออกบิล', icon: PlusCircle },
+  { id: 'create', label: 'ออกบิล', icon: ReceiptText },
+  { id: 'move-in', label: 'บิลแรกเข้า', icon: ShieldCheck },
   { id: 'history', label: 'ประวัติ', icon: History },
   { id: 'tenants', label: 'จัดการห้อง', icon: Users },
   { id: 'settings', label: 'ตั้งค่า', icon: Settings },
@@ -21,19 +31,19 @@ const navItems = [
           <Building2 class="w-6 h-6" />
         </div>
         <div>
-          <span class="font-bold text-xl block leading-none">SmartRent</span>
-          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Dormitory System</span>
+          <span class="font-bold text-lg block leading-tight">{{ apartmentName || 'SmartRent' }}</span>
+          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Dormitory System</span>
         </div>
       </div>
     </div>
     
-    <div class="flex md:flex-col justify-around md:justify-start p-4 md:p-6 gap-2 md:gap-4">
+    <div class="flex md:flex-col items-center justify-around md:justify-start px-2 py-3 md:p-6 gap-1 md:gap-4 h-full md:h-auto overflow-x-auto no-scrollbar">
       <button 
-        v-for="item in navItems"
+        v-for="item in menuItems"
         :key="item.id"
         @click="emit('update:modelValue', item.id)"
         :class="[
-          'flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 group',
+          'flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 p-2 md:p-3 rounded-2xl transition-all duration-300 group min-w-[64px] md:min-w-0 md:w-full',
           modelValue === item.id 
             ? 'bg-green-700 text-white shadow-lg shadow-green-100' 
             : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
@@ -41,9 +51,9 @@ const navItems = [
       >
         <component 
           :is="item.icon" 
-          :class="['w-5 h-5', modelValue === item.id ? 'text-white' : 'group-hover:scale-110 transition-transform']" 
+          :class="['w-5 h-5 md:w-5 md:h-5', modelValue === item.id ? 'text-white' : 'group-hover:scale-110 transition-transform']" 
         />
-        <span class="hidden md:inline font-bold">{{ item.label }}</span>
+        <span class="text-[9px] md:text-sm font-black md:font-bold uppercase md:capitalize tracking-tighter md:tracking-normal">{{ item.label }}</span>
       </button>
     </div>
   </nav>

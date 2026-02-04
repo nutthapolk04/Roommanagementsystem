@@ -17,6 +17,7 @@ import {
 import Sidebar from './components/Sidebar.vue';
 import Dashboard from './views/Dashboard.vue';
 import InvoiceForm from './views/InvoiceForm.vue';
+import MoveInBilling from './views/MoveInBilling.vue';
 import InvoiceHistory from './views/InvoiceHistory.vue';
 import TenantManager from './views/TenantManager.vue';
 import Settings from './views/Settings.vue';
@@ -99,24 +100,46 @@ const updateTenantMeter = async (tenantId, newMeter) => {
   }
 };
 
-const handleUpdateTenants = async (newTenants) => {
-    // This is for bulk update from TenantManager (mostly adds/edits)
-    // Since we are using onSnapshot, our local tenants.value will update automatically 
-    // when we push to Firestore.
-    
-    // Check for deleted (active = false) or new/updated
-    for (const t of newTenants) {
-        if (!t.id) {
+const handleSaveTenant = async (tenant) => {
+    try {
+        if (!tenant.id) {
             // New tenant
-            const { id, ...data } = t;
+            const { id, ...data } = tenant;
             await addDoc(collection(db, 'tenants'), data);
         } else {
             // Update existing
-            const tenantRef = doc(db, 'tenants', t.id);
-            const { id, ...data } = t;
+            const tenantRef = doc(db, 'tenants', tenant.id);
+            const { id, ...data } = tenant;
             await updateDoc(tenantRef, data);
         }
+    } catch (e) {
+        console.error("Error saving tenant: ", e);
+        alert("เกิดข้อผิดพลาดในการบันทึกข้อมูลผู้เช่า");
     }
+};
+
+const handleDeleteTenant = async (tenantId) => {
+    if (confirm('ต้องการลบข้อมูลผู้เช่านี้? (ข้อมูลจะถูกซ่อนจากรายการเบื้องต้น)')) {
+        try {
+            const tenantRef = doc(db, 'tenants', tenantId);
+            await updateDoc(tenantRef, { active: false });
+        } catch (e) {
+            console.error("Error deactivating tenant: ", e);
+        }
+    }
+};
+
+const handleUpdateInvoiceStatus = async (id, newStatus) => {
+  try {
+    const invoiceRef = doc(db, 'invoices', id);
+    await updateDoc(invoiceRef, { 
+      paid: newStatus,
+      updatedAt: Date.now()
+    });
+  } catch (err) {
+    console.error('Error updating invoice status:', err);
+    alert('ไม่สามารถอัปเดตสถานะการชำระเงินได้');
+  }
 };
 
 const handleDeleteInvoice = async (invoiceId) => {
@@ -154,6 +177,16 @@ const handleUpdateSettings = async (newSettings) => {
 
     <Sidebar v-model="activeTab" :apartmentName="ownerSettings.apartmentName" />
 
+    <!-- Mobile Header -->
+    <div class="md:hidden bg-white border-b border-slate-200 p-4 sticky top-0 z-40 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="bg-green-700 p-1.5 rounded-lg text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+        </div>
+        <span class="font-black text-lg tracking-tight">{{ ownerSettings.apartmentName }}</span>
+      </div>
+    </div>
+
     <!-- Main Content -->
     <main class="flex-1 md:ml-64 p-6 pb-24 md:pb-8">
       <div v-if="loading" class="flex items-center justify-center h-full">
@@ -174,7 +207,14 @@ const handleUpdateSettings = async (newSettings) => {
           :tenants="tenants" 
           :ownerSettings="ownerSettings"
           @save="handleSaveInvoice"
-          @update-meter="updateTenantMeter"
+          @update-meter="handleUpdateMeter"
+        />
+
+        <MoveInBilling
+          v-if="activeTab === 'move-in'"
+          :tenants="tenants"
+          :ownerSettings="ownerSettings"
+          @save="handleSaveInvoice"
         />
         
         <InvoiceHistory 
@@ -182,12 +222,14 @@ const handleUpdateSettings = async (newSettings) => {
           :invoices="invoices"
           @view="selectedInvoice = $event"
           @delete="handleDeleteInvoice"
+          @toggle-status="handleUpdateInvoiceStatus"
         />
         
         <TenantManager 
           v-if="activeTab === 'tenants'" 
           :tenants="tenants"
-          @update="handleUpdateTenants"
+          @save="handleSaveTenant"
+          @delete="handleDeleteTenant"
         />
         
         <Settings 

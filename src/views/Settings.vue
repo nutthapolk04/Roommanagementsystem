@@ -16,9 +16,9 @@ const updateSettings = (key, value) => {
         <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">ปรับแต่งข้อมูลหอพักและอัตราค่าบริการ</p>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main Info -->
-        <div class="md:col-span-2 space-y-8">
+        <div class="lg:col-span-2 space-y-8">
             <div class="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100 space-y-8">
                 <div class="space-y-4">
                     <div class="flex items-center gap-2 mb-2">

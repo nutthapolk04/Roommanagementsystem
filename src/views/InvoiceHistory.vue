@@ -1,9 +1,22 @@
 <script setup>
-import { ReceiptText, Trash2, Eye, Search, ChevronDown, ChevronRight, CalendarDays, Wallet } from 'lucide-vue-next';
+import { ReceiptText, Trash2, Eye, Search, ChevronDown, ChevronRight, CalendarDays, Wallet, Check, X, Loader2 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
 const props = defineProps(['invoices']);
-const emit = defineEmits(['view', 'delete']);
+const emit = defineEmits(['view', 'delete', 'toggle-status']);
+
+const loadingIds = ref(new Set());
+
+const handleToggleStatus = async (id, currentStatus) => {
+    loadingIds.value.add(id);
+    try {
+        await emit('toggle-status', id, !currentStatus);
+    } finally {
+        setTimeout(() => {
+            loadingIds.value.delete(id);
+        }, 500);
+    }
+};
 
 const searchQuery = ref('');
 const expandedGroups = ref({});
@@ -135,11 +148,40 @@ const formatDate = (ts) => {
                             <span class="text-[8px] font-black uppercase tracking-widest opacity-40 leading-none mb-1">ห้อง</span>
                             <span class="text-xl font-black italic leading-none">{{ inv.roomNumber }}</span>
                         </div>
-                        <div>
-                            <h3 class="font-black text-xl tracking-tight mb-1">{{ inv.tenantName }}</h3>
-                            <div class="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest">
-                                <span class="text-blue-600">฿{{ inv.grandTotal?.toLocaleString() }}</span>
-                                <span class="w-1 h-1 bg-slate-100 rounded-full"></span>
+                        <div class="flex-1">
+                            <div class="flex flex-wrap items-center gap-3 mb-2">
+                                <h3 class="font-black text-2xl tracking-tight leading-none text-slate-900">{{ inv.tenantName }}</h3>
+                                <span :class="[
+                                    'text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-xl whitespace-nowrap shadow-sm border',
+                                    inv.type === 'move-in' ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-green-700 text-white border-green-800'
+                                ]">
+                                    {{ inv.type === 'move-in' ? 'บิลแรกเข้า' : 'บิลรายเดือน' }}
+                                </span>
+                                
+                                <!-- Payment Status Badge -->
+                                <button 
+                                    @click.stop="handleToggleStatus(inv.id, inv.paid)"
+                                    :disabled="loadingIds.has(inv.id)"
+                                    :class="[
+                                        'flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm border-2',
+                                        inv.paid 
+                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100' 
+                                            : 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100'
+                                    ]"
+                                >
+                                    <template v-if="loadingIds.has(inv.id)">
+                                        <Loader2 class="w-3 h-3 animate-spin" />
+                                    </template>
+                                    <template v-else>
+                                        <Check v-if="inv.paid" class="w-3 h-3" />
+                                        <X v-else class="w-3 h-3" />
+                                    </template>
+                                    {{ inv.paid ? 'ชำระแล้ว' : 'รอชำระ' }}
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-4 text-xs font-bold uppercase tracking-wider">
+                                <span class="text-blue-600 font-black text-base italic">฿{{ inv.grandTotal?.toLocaleString() }}</span>
+                                <span class="w-1.5 h-1.5 bg-slate-200 rounded-full"></span>
                                 <span class="text-slate-400 group-hover:text-slate-600">{{ formatDate(inv.createdAt) }}</span>
                             </div>
                         </div>

@@ -15,6 +15,7 @@ const formData = ref({
   selectedTenantId: null,
   month: thaiMonths[new Date().getMonth()],
   year: new Date().getFullYear().toString(),
+  electricityPrev: 0,
   electricityCurrent: 0,
   internet: 0
 });
@@ -26,7 +27,7 @@ const selectedTenant = computed(() => {
 
 const electricityUnits = computed(() => {
   if (!selectedTenant.value) return 0;
-  return Math.max(0, formData.value.electricityCurrent - selectedTenant.value.electricityPrev);
+  return Math.max(0, formData.value.electricityCurrent - formData.value.electricityPrev);
 });
 
 const electricityTotal = computed(() => {
@@ -51,6 +52,7 @@ const previewData = computed(() => {
     tenantId: selectedTenant.value.id,
     month: formData.value.month,
     year: formData.value.year,
+    electricityPrev: formData.value.electricityPrev,
     electricityCurrent: formData.value.electricityCurrent,
     electricityUnits: electricityUnits.value,
     electricityTotal: electricityTotal.value,
@@ -68,10 +70,13 @@ const activeTenants = computed(() => props.tenants.filter(t => t.active));
 
 watch(() => formData.value.selectedTenantId, (newVal) => {
   if (newVal && selectedTenant.value) {
+    formData.value.electricityPrev = selectedTenant.value.electricityPrev;
     formData.value.electricityCurrent = selectedTenant.value.electricityPrev;
     formData.value.internet = props.ownerSettings.defaultInternet;
   }
 });
+
+const showMobilePreview = ref(false);
 
 const handleSave = () => {
   if (!selectedTenant.value) {
@@ -89,6 +94,7 @@ const handleSave = () => {
   
   // Reset
   formData.value.selectedTenantId = null;
+  showMobilePreview.value = false;
 };
 </script>
 
@@ -98,10 +104,19 @@ const handleSave = () => {
       
       <!-- Form Container -->
       <div class="bg-white p-8 md:p-10 rounded-[40px] shadow-sm border border-slate-100">
-        <h2 class="text-3xl font-black mb-8 flex items-center gap-3 text-green-700">
-          <PlusCircle class="w-8 h-8" />
-          สร้างบิลใหม่
-        </h2>
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-black flex items-center gap-3 text-green-700">
+                <PlusCircle class="w-8 h-8" />
+                สร้างบิลใหม่
+            </h2>
+            <button 
+                v-if="selectedTenant"
+                @click="showMobilePreview = !showMobilePreview"
+                class="lg:hidden flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-xl font-bold text-xs"
+            >
+                {{ showMobilePreview ? 'ซ่อนพรีวิว' : 'ดูพรีวิวบิล' }}
+            </button>
+        </div>
 
         <div class="space-y-8">
           <!-- Month & Year Selection -->
@@ -137,9 +152,11 @@ const handleSave = () => {
                 <div class="grid grid-cols-2 gap-6 relative z-10">
                   <div class="space-y-2">
                     <label class="text-[10px] font-black text-amber-700 uppercase tracking-widest px-1">มิเตอร์ครั้งก่อน</label>
-                    <div class="bg-white/80 backdrop-blur-sm border-2 border-amber-100 rounded-2xl p-4 text-amber-900 font-black text-xl shadow-inner text-center">
-                      {{ selectedTenant.electricityPrev }}
-                    </div>
+                    <input 
+                      type="number" 
+                      v-model.number="formData.electricityPrev"
+                      class="w-full bg-white border-2 border-amber-100 rounded-2xl p-4 text-amber-900 font-black text-xl text-center focus:border-amber-400 focus:ring-0 transition-all shadow-inner" 
+                    />
                   </div>
                   <div class="space-y-2">
                     <label class="text-[10px] font-black text-amber-700 uppercase tracking-widest px-1">มิเตอร์ครั้งนี้</label>
@@ -206,15 +223,18 @@ const handleSave = () => {
       </div>
 
       <!-- Preview Sticky -->
-      <div v-if="previewData" class="sticky top-6 hidden lg:block">
+      <div v-if="previewData" :class="[showMobilePreview ? 'block' : 'hidden lg:block', 'sticky top-6 z-10']">
         <div class="mb-4 flex items-center justify-between px-6">
-          <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest italic">Live Preview</h2>
+          <div class="flex items-center gap-2">
+            <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest italic">Live Preview</h2>
+            <button @click="showMobilePreview = false" class="lg:hidden text-xs font-bold text-red-500">ปิด</button>
+          </div>
           <span class="flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase">
             <span class="w-1.5 h-1.5 bg-green-700 rounded-full animate-pulse"></span>
             Real-time
           </span>
         </div>
-        <div class="transform scale-[0.85] origin-top shadow-2xl rounded-2xl overflow-hidden border border-slate-200">
+        <div class="transform scale-[0.85] lg:scale-[0.85] origin-top shadow-2xl rounded-2xl overflow-hidden border border-slate-200 bg-white">
           <InvoicePreview :data="previewData" />
         </div>
       </div>

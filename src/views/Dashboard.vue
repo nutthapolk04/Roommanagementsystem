@@ -5,14 +5,20 @@ import { Receipt, Building2, Clock, Banknote, ArrowRight } from 'lucide-vue-next
 const props = defineProps(['invoices', 'tenants', 'ownerSettings']);
 const emit = defineEmits(['navigate']);
 
-const currentMonth = new Intl.DateTimeFormat('th-TH', { month: 'long' }).format(new Date());
+const thaiMonths = [
+  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+  'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+];
+
+const currentMonth = thaiMonths[new Date().getMonth()];
 const currentYear = new Date().getFullYear();
 
-const activeTenantsCount = computed(() => props.tenants.filter(t => t.active).length);
+const activeTenantsCount = computed(() => props.tenants.length);
+const occupiedRooms = computed(() => props.tenants.filter(t => t.active).length);
 
 const monthlyStats = computed(() => {
   const thisMonthInvoices = props.invoices.filter(inv => 
-    inv.month === currentMonth && inv.year.toString() === currentYear.toString()
+    inv.month === currentMonth && (inv.year?.toString() === currentYear.toString())
   );
   return {
     count: thisMonthInvoices.length,
@@ -81,8 +87,8 @@ const stats = computed(() => [
       <div class="absolute -left-20 -bottom-20 w-60 h-60 bg-green-500/20 rounded-full blur-2xl"></div>
       
       <div class="relative z-10">
-        <h2 class="text-3xl font-black mb-3">พร้อมออกบิลใหม่หรือยัง?</h2>
-        <p class="text-green-100/80 mb-8 max-w-md font-medium">จัดการค่าเช่าและค่าสาธารณูปโภคประจำเดือนได้ง่ายๆ เพียงไม่กี่คลิก</p>
+        <h2 class="text-2xl sm:text-3xl font-black mb-3">พร้อมออกบิลใหม่หรือยัง?</h2>
+        <p class="text-green-100/80 mb-8 max-w-md font-medium text-sm sm:text-base">จัดการค่าเช่าและค่าสาธารณูปโภคประจำเดือนได้ง่ายๆ เพียงไม่กี่คลิก</p>
         <button 
           @click="emit('navigate', 'create')"
           class="bg-white text-green-700 px-8 py-4 rounded-2xl font-black hover:scale-105 transition-all shadow-xl flex items-center gap-3"

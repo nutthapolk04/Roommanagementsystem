@@ -3,7 +3,7 @@ import { Users, Plus, Edit3, Trash2, X, Building, Banknote, Zap, User as UserIco
 import { ref } from 'vue';
 
 const props = defineProps(['tenants']);
-const emit = defineEmits(['update']);
+const emit = defineEmits(['save', 'delete']);
 
 const showModal = ref(false);
 const editingTenant = ref(null);
@@ -26,25 +26,12 @@ const openModal = (tenant = null) => {
 };
 
 const saveTenant = () => {
-  let newTenants = [...props.tenants];
-  if (editingTenant.value.id) {
-    const index = newTenants.findIndex(t => t.id === editingTenant.value.id);
-    newTenants[index] = { ...editingTenant.value };
-  } else {
-    editingTenant.value.id = Date.now().toString();
-    newTenants.push({ ...editingTenant.value });
-  }
-  emit('update', newTenants);
+  emit('save', { ...editingTenant.value });
   showModal.value = false;
 };
 
 const deleteTenant = (id) => {
-  if (confirm('ต้องการลบข้อมูลผู้เช่านี้? (ข้อมูลจะถูกซ่อนจากรายการเบื้องต้น)')) {
-    const newTenants = props.tenants.map(t => 
-      t.id === id ? { ...t, active: false } : t
-    );
-    emit('update', newTenants);
-  }
+  emit('delete', id);
 };
 </script>
 
