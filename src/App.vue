@@ -44,28 +44,40 @@ const invoices = ref([]);
 const selectedInvoice = ref(null);
 
 onMounted(async () => {
+  console.log("🔥 App Mounted - Checking Firebase Data...");
+
   // 1. Sync Settings
   const settingsDoc = doc(db, 'config', 'ownerSettings');
   onSnapshot(settingsDoc, (snapshot) => {
     if (snapshot.exists()) {
+      console.log("✅ Settings Loaded:", snapshot.data().apartmentName);
       ownerSettings.value = { ...ownerSettings.value, ...snapshot.data() };
     } else {
-      // Initialize settings if they don't exist
+      console.warn("⚠️ No settings found, initializing default...");
       setDoc(settingsDoc, ownerSettings.value);
     }
+  }, (error) => {
+    console.error("❌ Firestore [Settings] Error:", error);
   });
 
   // 2. Sync Tenants
   const tenantsCol = collection(db, 'tenants');
   onSnapshot(tenantsCol, (snapshot) => {
+    console.log(`📊 Tenants Sync: Received ${snapshot.docs.length} records`);
     tenants.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    loading.value = false;
+  }, (error) => {
+    console.error("❌ Firestore [Tenants] Error:", error);
     loading.value = false;
   });
 
   // 3. Sync Invoices
   const invoicesCol = query(collection(db, 'invoices'), orderBy('createdAt', 'desc'));
   onSnapshot(invoicesCol, (snapshot) => {
+    console.log(`🧾 Invoices Sync: Received ${snapshot.docs.length} records`);
     invoices.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }, (error) => {
+    console.error("❌ Firestore [Invoices] Error:", error);
   });
 });
 
