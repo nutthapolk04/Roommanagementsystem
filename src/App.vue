@@ -90,33 +90,32 @@ const showToast = (msg = 'สำเร็จ!', duration = 3000) => {
   setTimeout(() => copySuccess.value = false, duration);
 };
 
-const handleSaveInvoice = async (invoice) => {
+const handleProcessInvoice = async (invoice, tenantId, newMeter) => {
   isProcessing.value = true;
+  console.log("🚀 Processing Invoice for Tenant:", tenantId, "with new meter:", newMeter);
   try {
-    const { id, ...invoiceData } = invoice; // Remove temporary ID
+    const { id, ...invoiceData } = invoice;
+    
+    // 1. Save the Invoice
     await addDoc(collection(db, 'invoices'), {
         ...invoiceData,
         createdAt: Date.now()
     });
-    activeTab.value = 'history';
-    showToast('บันทึกบิลสำเร็จ!');
-  } catch (e) {
-    console.error("Error adding invoice: ", e);
-    alert("เกิดข้อผิดพลาดในการบันทึกบิล");
-  } finally {
-    isProcessing.value = false;
-  }
-};
+    console.log("✅ Invoice successfully saved to Firestore");
 
-const updateTenantMeter = async (tenantId, newMeter) => {
-  isProcessing.value = true;
-  try {
+    // 2. Update the Tenant's Meter
     const tenantRef = doc(db, 'tenants', tenantId);
     await updateDoc(tenantRef, {
       electricityPrev: newMeter
     });
+    console.log("✅ Tenant meter successfully updated");
+
+    activeTab.value = 'history';
+    showToast('บันทึกบิลสำเร็จ!');
   } catch (e) {
-    console.error("Error updating meter: ", e);
+    console.error("❌ Error processing invoice:", e);
+    // Show a more detailed alert to the user
+    alert(`เกิดข้อผิดพลาด: ${e.message}\nโปรดตรวจสอบการตั้งค่า Firebase และสิทธิ์การเข้าถึง (Security Rules)`);
   } finally {
     isProcessing.value = false;
   }
@@ -250,8 +249,7 @@ const handleUpdateSettings = async (newSettings) => {
           :tenants="tenants" 
           :ownerSettings="ownerSettings"
           :isProcessing="isProcessing"
-          @save="handleSaveInvoice"
-          @update-meter="updateTenantMeter"
+          @save="handleProcessInvoice"
         />
 
         <MoveInBilling

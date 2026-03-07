@@ -89,8 +89,7 @@ const handleSave = () => {
     id: Date.now().toString(),
   };
 
-  emit('save', invoice);
-  emit('update-meter', selectedTenant.value.id, formData.value.electricityCurrent);
+  emit('save', invoice, selectedTenant.value.id, formData.value.electricityCurrent);
 };
 </script>
 
