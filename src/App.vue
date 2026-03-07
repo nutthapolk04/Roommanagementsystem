@@ -219,7 +219,7 @@ const handleUpdateSettings = async (newSettings) => {
           :tenants="tenants" 
           :ownerSettings="ownerSettings"
           @save="handleSaveInvoice"
-          @update-meter="handleUpdateMeter"
+          @update-meter="updateTenantMeter"
         />
 
         <MoveInBilling
