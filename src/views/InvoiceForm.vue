@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { PlusCircle, Zap, Droplets, Globe, ReceiptText } from 'lucide-vue-next';
 import InvoicePreview from '../components/InvoicePreview.vue';
 
-const props = defineProps(['tenants', 'ownerSettings']);
+const props = defineProps(['tenants', 'ownerSettings', 'isProcessing']);
 const emit = defineEmits(['save', 'update-meter']);
 
 const thaiMonths = [
@@ -202,9 +202,11 @@ const handleSave = () => {
                     </div>
                     <button 
                         @click="handleSave"
-                        class="bg-white text-green-700 px-8 py-4 rounded-2xl font-black hover:scale-105 active:scale-95 transition-all shadow-xl flex items-center gap-2"
+                        :disabled="props.isProcessing"
+                        class="bg-white text-green-700 px-8 py-4 rounded-2xl font-black hover:scale-105 active:scale-95 transition-all shadow-xl flex items-center gap-2 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
                     >
-                        บันทึกและออกบิล
+                        <span v-if="props.isProcessing" class="animate-spin rounded-full h-4 w-4 border-b-2 border-green-700 mr-2"></span>
+                        {{ props.isProcessing ? 'กำลังบันทึก...' : 'บันทึกและออกบิล' }}
                     </button>
                 </div>
               </div>

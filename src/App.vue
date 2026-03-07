@@ -26,6 +26,8 @@ import InvoicePreviewModal from './components/InvoicePreviewModal.vue';
 // State
 const activeTab = ref('dashboard');
 const loading = ref(true);
+const isProcessing = ref(false); // Global processing state
+const toastMessage = ref('สำเร็จ!');
 const copySuccess = ref(false);
 
 const ownerSettings = ref({
@@ -44,6 +46,7 @@ const invoices = ref([]);
 const selectedInvoice = ref(null);
 
 onMounted(async () => {
+  console.log("🔥 App Mounted - Firebase Project ID:", db.app.options.projectId);
   console.log("🔥 App Mounted - Checking Firebase Data...");
 
   // 1. Sync Settings
@@ -81,12 +84,14 @@ onMounted(async () => {
   });
 });
 
-const showToast = () => {
+const showToast = (msg = 'สำเร็จ!', duration = 3000) => {
+  toastMessage.value = msg;
   copySuccess.value = true;
-  setTimeout(() => copySuccess.value = false, 3000);
+  setTimeout(() => copySuccess.value = false, duration);
 };
 
 const handleSaveInvoice = async (invoice) => {
+  isProcessing.value = true;
   try {
     const { id, ...invoiceData } = invoice; // Remove temporary ID
     await addDoc(collection(db, 'invoices'), {
@@ -94,14 +99,17 @@ const handleSaveInvoice = async (invoice) => {
         createdAt: Date.now()
     });
     activeTab.value = 'history';
-    showToast();
+    showToast('บันทึกบิลสำเร็จ!');
   } catch (e) {
     console.error("Error adding invoice: ", e);
     alert("เกิดข้อผิดพลาดในการบันทึกบิล");
+  } finally {
+    isProcessing.value = false;
   }
 };
 
 const updateTenantMeter = async (tenantId, newMeter) => {
+  isProcessing.value = true;
   try {
     const tenantRef = doc(db, 'tenants', tenantId);
     await updateDoc(tenantRef, {
@@ -109,67 +117,90 @@ const updateTenantMeter = async (tenantId, newMeter) => {
     });
   } catch (e) {
     console.error("Error updating meter: ", e);
+  } finally {
+    isProcessing.value = false;
   }
 };
 
 const handleSaveTenant = async (tenant) => {
+    isProcessing.value = true;
     try {
         if (!tenant.id) {
             // New tenant
             const { id, ...data } = tenant;
             await addDoc(collection(db, 'tenants'), data);
+            showToast('เพิ่มผู้เช่าใหม่สำเร็จ!');
         } else {
             // Update existing
             const tenantRef = doc(db, 'tenants', tenant.id);
             const { id, ...data } = tenant;
             await updateDoc(tenantRef, data);
+            showToast('อัปเดตข้อมูลผู้เช่าสำเร็จ!');
         }
     } catch (e) {
         console.error("Error saving tenant: ", e);
         alert("เกิดข้อผิดพลาดในการบันทึกข้อมูลผู้เช่า");
+    } finally {
+        isProcessing.value = false;
     }
 };
 
 const handleDeleteTenant = async (tenantId) => {
     if (confirm('ต้องการลบข้อมูลผู้เช่านี้? (ข้อมูลจะถูกซ่อนจากรายการเบื้องต้น)')) {
+        isProcessing.value = true;
         try {
             const tenantRef = doc(db, 'tenants', tenantId);
             await updateDoc(tenantRef, { active: false });
+            showToast('ลบข้อมูลผู้เช่าแล้ว');
         } catch (e) {
             console.error("Error deactivating tenant: ", e);
+        } finally {
+            isProcessing.value = false;
         }
     }
 };
 
 const handleUpdateInvoiceStatus = async (id, newStatus) => {
+  isProcessing.value = true;
   try {
     const invoiceRef = doc(db, 'invoices', id);
     await updateDoc(invoiceRef, { 
       paid: newStatus,
       updatedAt: Date.now()
     });
+    showToast(newStatus ? 'แจ้งชำระเงินแล้ว' : 'ยกเลิกการชำระเงินแล้ว');
   } catch (err) {
     console.error('Error updating invoice status:', err);
     alert('ไม่สามารถอัปเดตสถานะการชำระเงินได้');
+  } finally {
+    isProcessing.value = false;
   }
 };
 
 const handleDeleteInvoice = async (invoiceId) => {
     if (confirm('ต้องการลบใบเสร็จนี้?')) {
+        isProcessing.value = true;
         try {
             await deleteDoc(doc(db, 'invoices', invoiceId));
+            showToast('ลบบิลสำเร็จ!');
         } catch (e) {
             console.error("Error deleting invoice: ", e);
+        } finally {
+            isProcessing.value = false;
         }
     }
 };
 
 const handleUpdateSettings = async (newSettings) => {
+    isProcessing.value = true;
     try {
         const settingsDoc = doc(db, 'config', 'ownerSettings');
         await updateDoc(settingsDoc, newSettings);
+        showToast('บันทึกการตั้งค่าสำเร็จ!');
     } catch (e) {
         console.error("Error updating settings: ", e);
+    } finally {
+        isProcessing.value = false;
     }
 };
 
@@ -183,7 +214,7 @@ const handleUpdateSettings = async (newSettings) => {
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span class="font-bold">สำเร็จ!</span>
+        <span class="font-bold">{{ toastMessage }}</span>
       </div>
     </Transition>
 
@@ -218,6 +249,7 @@ const handleUpdateSettings = async (newSettings) => {
           v-if="activeTab === 'create'" 
           :tenants="tenants" 
           :ownerSettings="ownerSettings"
+          :isProcessing="isProcessing"
           @save="handleSaveInvoice"
           @update-meter="updateTenantMeter"
         />
@@ -232,6 +264,7 @@ const handleUpdateSettings = async (newSettings) => {
         <InvoiceHistory 
           v-if="activeTab === 'history'" 
           :invoices="invoices"
+          :isProcessing="isProcessing"
           @view="selectedInvoice = $event"
           @delete="handleDeleteInvoice"
           @toggle-status="handleUpdateInvoiceStatus"
@@ -240,6 +273,7 @@ const handleUpdateSettings = async (newSettings) => {
         <TenantManager 
           v-if="activeTab === 'tenants'" 
           :tenants="tenants"
+          :isProcessing="isProcessing"
           @save="handleSaveTenant"
           @delete="handleDeleteTenant"
         />

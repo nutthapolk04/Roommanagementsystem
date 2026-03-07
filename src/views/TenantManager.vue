@@ -2,7 +2,7 @@
 import { Users, Plus, Edit3, Trash2, X, Building, Banknote, Zap, User as UserIcon } from 'lucide-vue-next';
 import { ref } from 'vue';
 
-const props = defineProps(['tenants']);
+const props = defineProps(['tenants', 'isProcessing']);
 const emit = defineEmits(['save', 'delete']);
 
 const showModal = ref(false);
@@ -178,10 +178,11 @@ const deleteTenant = (id) => {
 
             <button 
               @click="saveTenant"
-              class="w-full bg-green-700 text-white py-5 rounded-[24px] font-black text-xl hover:bg-green-800 shadow-2xl shadow-green-100 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3"
+              :disabled="props.isProcessing"
+              class="w-full bg-green-700 text-white py-5 rounded-[24px] font-black text-xl hover:bg-green-800 shadow-2xl shadow-green-100 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
             >
-              <Plus class="w-6 h-6" v-if="!editingTenant.id" />
-              บันทึกข้อมูล
+              <span v-if="props.isProcessing" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+              {{ props.isProcessing ? 'กำลังบันทึก...' : (editingTenant.id ? 'บันทึกข้อมูล' : 'เพิ่มห้องพัก') }}
             </button>
           </div>
         </div>
