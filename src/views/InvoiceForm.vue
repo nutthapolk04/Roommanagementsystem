@@ -91,10 +91,6 @@ const handleSave = () => {
 
   emit('save', invoice);
   emit('update-meter', selectedTenant.value.id, formData.value.electricityCurrent);
-  
-  // Reset
-  formData.value.selectedTenantId = null;
-  showMobilePreview.value = false;
 };
 </script>
 
