@@ -22,6 +22,7 @@ import InvoiceHistory from './views/InvoiceHistory.vue';
 import TenantManager from './views/TenantManager.vue';
 import Settings from './views/Settings.vue';
 import Expenses from './views/Expenses.vue';
+import Reports from './views/Reports.vue';
 import Login from './views/Login.vue';
 import InvoicePreviewModal from './components/InvoicePreviewModal.vue';
 
@@ -330,6 +331,12 @@ const handleDeleteExpense = async (id) => {
           :isProcessing="isProcessing"
           @save="handleSaveExpense"
           @delete="handleDeleteExpense"
+        />
+
+        <Reports
+          v-if="activeTab === 'reports'"
+          :invoices="invoices"
+          :expenses="expenses"
         />
         
         <InvoiceForm 
