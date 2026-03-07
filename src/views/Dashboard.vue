@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue';
-import { Receipt, Building2, Clock, Banknote, ArrowRight } from 'lucide-vue-next';
+import { Receipt, Building2, Clock, Banknote, ArrowRight, Wallet, TrendingUp } from 'lucide-vue-next';
 
-const props = defineProps(['invoices', 'tenants', 'ownerSettings']);
+const props = defineProps(['invoices', 'tenants', 'ownerSettings', 'expenses']);
 const emit = defineEmits(['navigate']);
 
 const thaiMonths = [
@@ -20,20 +20,26 @@ const monthlyStats = computed(() => {
   const thisMonthInvoices = props.invoices.filter(inv => 
     inv.month === currentMonth && (inv.year?.toString() === currentYear.toString())
   );
+  
+  // Expenses this month
+  const thisMonthExpenses = (props.expenses || []).filter(ex => {
+      const exDate = new Date(ex.date);
+      return thaiMonths[exDate.getMonth()] === currentMonth && exDate.getFullYear() === currentYear;
+  });
+
+  const totalRevenue = thisMonthInvoices.reduce((sum, inv) => sum + (inv.grandTotal || 0), 0);
+  const totalExpenses = thisMonthExpenses.reduce((sum, ex) => sum + (ex.amount || 0), 0);
+  const netProfit = totalRevenue - totalExpenses;
+
   return {
     count: thisMonthInvoices.length,
-    total: thisMonthInvoices.reduce((sum, inv) => sum + (inv.grandTotal || 0), 0)
+    total: totalRevenue,
+    expenses: totalExpenses,
+    profit: netProfit
   };
 });
 
 const stats = computed(() => [
-  { 
-    label: 'ทั้งหมด', 
-    value: props.invoices.length, 
-    sub: 'บิลทั้งหมด', 
-    icon: Receipt, 
-    color: 'bg-green-100 text-green-700' 
-  },
   { 
     label: 'ห้องพัก', 
     value: activeTenantsCount.value, 
@@ -42,17 +48,24 @@ const stats = computed(() => [
     color: 'bg-blue-100 text-blue-700' 
   },
   { 
-    label: 'เดือนนี้', 
-    value: monthlyStats.value.count, 
-    sub: currentMonth, 
-    icon: Clock, 
-    color: 'bg-amber-100 text-amber-600' 
-  },
-  { 
     label: 'รายรับ', 
     value: `฿${monthlyStats.value.total.toLocaleString()}`, 
     sub: 'บาท (เดือนนี้)', 
     icon: Banknote, 
+    color: 'bg-green-100 text-green-700' 
+  },
+  { 
+    label: 'รายจ่าย', 
+    value: `฿${monthlyStats.value.expenses.toLocaleString()}`, 
+    sub: 'บาท (เดือนนี้)', 
+    icon: Wallet, 
+    color: 'bg-red-100 text-red-600' 
+  },
+  { 
+    label: 'กำไรสุทธิ', 
+    value: `฿${monthlyStats.value.profit.toLocaleString()}`, 
+    sub: 'บาท (เดือนนี้)', 
+    icon: TrendingUp, 
     color: 'bg-purple-100 text-purple-600' 
   },
 ]);

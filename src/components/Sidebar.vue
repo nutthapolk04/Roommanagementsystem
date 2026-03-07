@@ -7,7 +7,8 @@ import {
   Settings,
   ShieldCheck,
   Building2,
-  LogOut
+  LogOut,
+  Wallet
 } from 'lucide-vue-next';
 
 const props = defineProps(['modelValue', 'apartmentName']);
@@ -18,6 +19,7 @@ const menuItems = [
   { id: 'create', label: 'ออกบิล', icon: ReceiptText },
   { id: 'move-in', label: 'บิลแรกเข้า', icon: ShieldCheck },
   { id: 'history', label: 'ประวัติ', icon: History },
+  { id: 'expenses', label: 'รายจ่าย', icon: Wallet },
   { id: 'tenants', label: 'จัดการห้อง', icon: Users },
   { id: 'settings', label: 'ตั้งค่า', icon: Settings },
 ];

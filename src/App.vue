@@ -21,6 +21,7 @@ import MoveInBilling from './views/MoveInBilling.vue';
 import InvoiceHistory from './views/InvoiceHistory.vue';
 import TenantManager from './views/TenantManager.vue';
 import Settings from './views/Settings.vue';
+import Expenses from './views/Expenses.vue';
 import Login from './views/Login.vue';
 import InvoicePreviewModal from './components/InvoicePreviewModal.vue';
 
@@ -46,6 +47,7 @@ const ownerSettings = ref({
 
 const tenants = ref([]);
 const invoices = ref([]);
+const expenses = ref([]);
 const selectedInvoice = ref(null);
 
 onMounted(() => {
@@ -98,6 +100,15 @@ const initData = async () => {
     invoices.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }, (error) => {
     console.error("❌ Firestore [Invoices] Error:", error);
+  });
+
+  // 4. Sync Expenses
+  const expensesCol = query(collection(db, 'expenses'), orderBy('createdAt', 'desc'));
+  onSnapshot(expensesCol, (snapshot) => {
+    console.log(`💸 Expenses Sync: Received ${snapshot.docs.length} records`);
+    expenses.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }, (error) => {
+    console.error("❌ Firestore [Expenses] Error:", error);
   });
 };
 
@@ -229,6 +240,35 @@ const handleUpdateSettings = async (newSettings) => {
     }
 };
 
+const handleSaveExpense = async (expense) => {
+    isProcessing.value = true;
+    try {
+        await addDoc(collection(db, 'expenses'), {
+            ...expense,
+            createdAt: Date.now()
+        });
+        showToast('บันทึกรายจ่ายสำเร็จ!');
+    } catch (e) {
+        console.error("Error adding expense: ", e);
+    } finally {
+        isProcessing.value = false;
+    }
+};
+
+const handleDeleteExpense = async (id) => {
+    if (confirm('ต้องการลบรายการจ่ายนี้?')) {
+        isProcessing.value = true;
+        try {
+            await deleteDoc(doc(db, 'expenses', id));
+            showToast('ลบรายการสำเร็จ!');
+        } catch (e) {
+            console.error("Error deleting expense: ", e);
+        } finally {
+            isProcessing.value = false;
+        }
+    }
+};
+
 </script>
 
 <template>
@@ -279,8 +319,17 @@ const handleUpdateSettings = async (newSettings) => {
           v-if="activeTab === 'dashboard'" 
           :invoices="invoices" 
           :tenants="tenants" 
+          :expenses="expenses"
           :ownerSettings="ownerSettings"
           @navigate="activeTab = $event"
+        />
+
+        <Expenses 
+          v-if="activeTab === 'expenses'" 
+          :expenses="expenses"
+          :isProcessing="isProcessing"
+          @save="handleSaveExpense"
+          @delete="handleDeleteExpense"
         />
         
         <InvoiceForm 
