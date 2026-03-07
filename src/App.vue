@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { 
   collection, 
   onSnapshot, 
@@ -10,9 +10,9 @@ import {
   deleteDoc, 
   query, 
   orderBy,
-  setDoc,
-  getDoc
+  setDoc
 } from 'firebase/firestore';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 import Sidebar from './components/Sidebar.vue';
 import Dashboard from './views/Dashboard.vue';
@@ -21,12 +21,15 @@ import MoveInBilling from './views/MoveInBilling.vue';
 import InvoiceHistory from './views/InvoiceHistory.vue';
 import TenantManager from './views/TenantManager.vue';
 import Settings from './views/Settings.vue';
+import Login from './views/Login.vue';
 import InvoicePreviewModal from './components/InvoicePreviewModal.vue';
 
 // State
 const activeTab = ref('dashboard');
 const loading = ref(true);
-const isProcessing = ref(false); // Global processing state
+const authLoading = ref(true);
+const user = ref(null);
+const isProcessing = ref(false); 
 const toastMessage = ref('สำเร็จ!');
 const copySuccess = ref(false);
 
@@ -45,7 +48,21 @@ const tenants = ref([]);
 const invoices = ref([]);
 const selectedInvoice = ref(null);
 
-onMounted(async () => {
+onMounted(() => {
+  onAuthStateChanged(auth, (currentUser) => {
+    user.value = currentUser;
+    authLoading.value = false;
+    
+    if (currentUser) {
+      initData();
+    } else {
+      loading.value = false;
+    }
+  });
+});
+
+const initData = async () => {
+  loading.value = true;
   console.log("🔥 App Mounted - Firebase Project ID:", db.app.options.projectId);
   console.log("🔥 App Mounted - Checking Firebase Data...");
 
@@ -82,7 +99,16 @@ onMounted(async () => {
   }, (error) => {
     console.error("❌ Firestore [Invoices] Error:", error);
   });
-});
+};
+
+const handleLogout = async () => {
+    try {
+        await signOut(auth);
+        activeTab.value = 'dashboard';
+    } catch (err) {
+        console.error('Logout error:', err);
+    }
+};
 
 const showToast = (msg = 'สำเร็จ!', duration = 3000) => {
   toastMessage.value = msg;
@@ -206,7 +232,16 @@ const handleUpdateSettings = async (newSettings) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+  <!-- Loading Full Screen -->
+  <div v-if="authLoading" class="min-h-screen bg-slate-50 flex items-center justify-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+  </div>
+
+  <!-- Login Mode -->
+  <Login v-else-if="!user" />
+
+  <!-- App Mode -->
+  <div v-else class="min-h-screen bg-slate-50 flex flex-col md:flex-row">
     <!-- Success Toast -->
     <Transition name="fade">
       <div v-if="copySuccess" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[200] bg-green-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2">
@@ -217,7 +252,11 @@ const handleUpdateSettings = async (newSettings) => {
       </div>
     </Transition>
 
-    <Sidebar v-model="activeTab" :apartmentName="ownerSettings.apartmentName" />
+    <Sidebar 
+        v-model="activeTab" 
+        :apartmentName="ownerSettings.apartmentName" 
+        @logout="handleLogout"
+    />
 
     <!-- Mobile Header -->
     <div class="md:hidden bg-white border-b border-slate-200 p-4 sticky top-0 z-40 flex items-center justify-between">

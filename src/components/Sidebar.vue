@@ -5,13 +5,13 @@ import {
   History,
   Users,
   Settings,
-  ChevronRight,
   ShieldCheck,
-  Building2
+  Building2,
+  LogOut
 } from 'lucide-vue-next';
 
 const props = defineProps(['modelValue', 'apartmentName']);
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'logout']);
 
 const menuItems = [
   { id: 'dashboard', label: 'แดชบอร์ด', icon: LayoutDashboard },
@@ -54,6 +54,24 @@ const menuItems = [
           :class="['w-5 h-5 md:w-5 md:h-5', modelValue === item.id ? 'text-white' : 'group-hover:scale-110 transition-transform']" 
         />
         <span class="text-[9px] md:text-sm font-black md:font-bold uppercase md:capitalize tracking-tighter md:tracking-normal">{{ item.label }}</span>
+      </button>
+
+      <div class="mt-auto pt-4 border-t border-slate-100 w-full hidden md:block">
+        <button 
+          @click="emit('logout')"
+          class="flex items-center gap-3 p-3 rounded-2xl text-red-400 hover:bg-red-50 hover:text-red-500 transition-all w-full"
+        >
+          <LogOut class="w-5 h-5" />
+          <span class="text-sm font-bold capitalize">ออกจากระบบ</span>
+        </button>
+      </div>
+
+      <button 
+        @click="emit('logout')"
+        class="md:hidden flex flex-col items-center justify-center p-2 rounded-2xl text-red-300 hover:text-red-500 transition-all"
+      >
+        <LogOut class="w-5 h-5" />
+        <span class="text-[9px] font-black uppercase tracking-tighter">ขยาย</span>
       </button>
     </div>
   </nav>
