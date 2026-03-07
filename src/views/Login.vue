@@ -1,49 +1,68 @@
 <script setup>
 import { ref } from 'vue';
 import { auth } from '../firebase';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { LogIn, Mail, Lock, Building, Loader2 } from 'lucide-vue-next';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile
+} from 'firebase/auth';
+import { LogIn, Mail, Lock, Building, Loader2, UserPlus, ArrowRight } from 'lucide-vue-next';
 
+const isRegister = ref(false);
 const email = ref('');
 const password = ref('');
+const confirmPassword = ref('');
+const apartmentName = ref('');
 const loading = ref(false);
 const error = ref('');
 
-const handleLogin = async () => {
+const handleSubmit = async () => {
+  error.value = '';
+  
   if (!email.value || !password.value) {
     error.value = 'กรุณากรอกอีเมลและรหัสผ่าน';
     return;
   }
+
+  if (isRegister.value) {
+    if (password.value !== confirmPassword.value) {
+      error.value = 'รหัสผ่านไม่ตรงกัน';
+      return;
+    }
+    if (password.value.length < 6) {
+      error.value = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+      return;
+    }
+  }
   
   loading.value = true;
-  error.value = '';
   
   try {
-    await signInWithEmailAndPassword(auth, email.value, password.value);
+    if (isRegister.value) {
+      // Sign Up
+      const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+      // If you want to save the apartment name to the profile
+      if (apartmentName.value) {
+        await updateProfile(userCredential.user, { displayName: apartmentName.value });
+      }
+    } else {
+      // Login
+      await signInWithEmailAndPassword(auth, email.value, password.value);
+    }
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('Auth error:', err);
     if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
       error.value = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+    } else if (err.code === 'auth/email-already-in-use') {
+      error.value = 'อีเมลนี้ถูกใช้งานแล้ว';
     } else {
-      error.value = 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่';
+      error.value = 'เกิดข้อผิดพลาด กรุณาลองใหม่: ' + err.code;
     }
   } finally {
     loading.value = false;
   }
 };
-
-const handleForgotPassword = async () => {
-    if (!email.value) {
-        error.value = 'กรุณากรอกอีเมลเพื่อรีเซ็ตรหัสผ่าน';
-        return;
-    }
-    try {
-        await sendPasswordResetEmail(auth, email.value);
-        alert('ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลของคุณแล้ว');
-    } catch (err) {
-        error.value = 'ไม่สามารถส่งลิงก์รีเซ็ตรหัสผ่านได้';
-    }
-}
 </script>
 
 <template>
@@ -59,15 +78,39 @@ const handleForgotPassword = async () => {
         <p class="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">Premium Room Management System</p>
       </div>
 
-      <!-- Login Card -->
+      <!-- Login/Register Card -->
       <div class="bg-white p-10 rounded-[48px] shadow-2xl border border-white relative overflow-hidden">
         <!-- Decoration -->
         <div class="absolute -right-10 -top-10 w-40 h-40 bg-green-50 rounded-full blur-3xl opacity-50"></div>
         
-        <form @submit.prevent="handleLogin" class="relative z-10 space-y-6">
+        <!-- Tab Toggle -->
+        <div class="flex bg-slate-50 p-1.5 rounded-2xl mb-8 relative z-10">
+            <button 
+                @click="isRegister = false; error = ''"
+                :class="['flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all', !isRegister ? 'bg-white text-green-700 shadow-sm' : 'text-slate-400']"
+            >เข้าสู่ระบบ</button>
+            <button 
+                @click="isRegister = true; error = ''"
+                :class="['flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all', isRegister ? 'bg-white text-green-700 shadow-sm' : 'text-slate-400']"
+            >ลงทะเบียนใหม่</button>
+        </div>
+
+        <form @submit.prevent="handleSubmit" class="relative z-10 space-y-6">
+          <div v-if="isRegister" class="space-y-2 animate-in slide-in-from-top-2 duration-300">
+            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2 flex items-center gap-2">
+              <Building class="w-3 h-3" /> ชื่อห้องพัก / หอพัก
+            </label>
+            <input 
+              v-model="apartmentName"
+              type="text" 
+              placeholder="เช่น บ้านเราเอง"
+              class="w-full bg-slate-50 border-2 border-transparent focus:border-green-500 focus:bg-white rounded-2xl p-4 font-bold transition-all outline-none"
+            />
+          </div>
+
           <div class="space-y-2">
             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2 flex items-center gap-2">
-              <Mail class="w-3 h-3" /> อีเมลผู้ดูแล
+              <Mail class="w-3 h-3" /> อีเมล
             </label>
             <input 
               v-model="email"
@@ -83,10 +126,22 @@ const handleForgotPassword = async () => {
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                   <Lock class="w-3 h-3" /> รหัสผ่าน
                 </label>
-                <button type="button" @click="handleForgotPassword" class="text-[10px] font-black uppercase tracking-widest text-green-700 hover:text-green-800">ลืมรหัสผ่าน?</button>
             </div>
             <input 
               v-model="password"
+              type="password" 
+              required
+              placeholder="••••••••"
+              class="w-full bg-slate-50 border-2 border-transparent focus:border-green-500 focus:bg-white rounded-2xl p-4 font-bold transition-all outline-none"
+            />
+          </div>
+
+          <div v-if="isRegister" class="space-y-2 animate-in slide-in-from-top-2 duration-300">
+            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2 flex items-center gap-2">
+              <Lock class="w-3 h-3" /> ยืนยันรหัสผ่าน
+            </label>
+            <input 
+              v-model="confirmPassword"
               type="password" 
               required
               placeholder="••••••••"
@@ -105,11 +160,12 @@ const handleForgotPassword = async () => {
           >
             <template v-if="loading">
               <Loader2 class="w-5 h-5 animate-spin" />
-              <span>กำลังเข้าสู่ระบบ...</span>
+              <span>กำลังดำเนินการ...</span>
             </template>
             <template v-else>
-              <LogIn class="w-5 h-5" />
-              <span>เข้าสู่ระบบ</span>
+              <LogIn v-if="!isRegister" class="w-5 h-5" />
+              <UserPlus v-else class="w-5 h-5" />
+              <span>{{ isRegister ? 'สร้างบัญชีผู้ใช้' : 'เข้าสู่ระบบ' }}</span>
             </template>
           </button>
         </form>
