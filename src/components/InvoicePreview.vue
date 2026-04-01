@@ -57,8 +57,8 @@ const props = defineProps(['data']);
     <!-- Line Items -->
     <div class="space-y-4">
         <div class="flex items-center justify-between px-2">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Description / รายการ</h3>
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mr-4">Amount / จำนวนเงิน</h3>
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Description / รายการ</h3>
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mr-4">Amount / จำนวนเงิน</h3>
         </div>
         
         <div class="space-y-1.5">
@@ -66,35 +66,35 @@ const props = defineProps(['data']);
             <template v-if="data.type === 'move-in'">
                 <div v-if="data.securityDeposit > 0" class="grid grid-cols-12 gap-4 bg-white p-4 rounded-2xl border border-slate-100 items-center">
                     <div class="col-span-7">
-                        <div class="font-black text-slate-900 text-base">เงินประกัน/มัดจำ (Security Deposit)</div>
+                        <div class="font-black text-slate-900 text-lg">เงินประกัน/มัดจำ (Security Deposit)</div>
                     </div>
-                    <div class="col-span-2 text-center text-[10px] font-black text-slate-400 uppercase italic">1-2 Months</div>
-                    <div class="col-span-3 text-right font-black text-lg italic text-slate-900">{{ data.securityDeposit?.toLocaleString() }}</div>
+                    <div class="col-span-2 text-center text-xs font-black text-slate-400 uppercase italic">1-2 Months</div>
+                    <div class="col-span-3 text-right font-black text-2xl italic text-slate-900">{{ data.securityDeposit?.toLocaleString() }}</div>
                 </div>
 
                 <div v-if="data.advancedRent > 0" class="grid grid-cols-12 gap-4 bg-white p-4 rounded-2xl border border-slate-100 items-center">
                     <div class="col-span-7">
-                        <div class="font-black text-slate-900 text-base">ค่าเช่าห้อง (Room Rent)</div>
+                        <div class="font-black text-slate-900 text-lg">ค่าเช่าห้อง (Room Rent)</div>
                     </div>
-                    <div class="col-span-2 text-center text-[10px] font-black text-slate-400 uppercase italic">Paid</div>
-                    <div class="col-span-3 text-right font-black text-lg italic text-slate-900">{{ data.advancedRent?.toLocaleString() }}</div>
+                    <div class="col-span-2 text-center text-xs font-black text-slate-400 uppercase italic">Paid</div>
+                    <div class="col-span-3 text-right font-black text-2xl italic text-slate-900">{{ data.advancedRent?.toLocaleString() }}</div>
                 </div>
 
                 <div v-if="data.keyCardFee > 0" class="grid grid-cols-12 gap-4 bg-white p-4 rounded-2xl border border-slate-100 items-center">
                     <div class="col-span-7">
-                        <div class="font-black text-slate-900 text-base">ค่าคีย์การ์ด/อื่นๆ (Entry Fees)</div>
+                        <div class="font-black text-slate-900 text-lg">ค่าคีย์การ์ด/อื่นๆ (Entry Fees)</div>
                     </div>
-                    <div class="col-span-2 text-center text-[10px] font-black text-slate-400 uppercase italic">Included</div>
-                    <div class="col-span-3 text-right font-black text-lg italic text-slate-900">{{ data.keyCardFee?.toLocaleString() }}</div>
+                    <div class="col-span-2 text-center text-xs font-black text-slate-400 uppercase italic">Included</div>
+                    <div class="col-span-3 text-right font-black text-2xl italic text-slate-900">{{ data.keyCardFee?.toLocaleString() }}</div>
                 </div>
 
                 <div v-if="data.otherFees > 0" class="grid grid-cols-12 gap-4 bg-white p-4 rounded-2xl border border-slate-100 items-center">
                     <div class="col-span-7">
-                        <div class="font-black text-slate-900 text-base">อื่นๆ (Other Charges)</div>
-                        <div v-if="data.otherFeesNote" class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{{ data.otherFeesNote }}</div>
+                        <div class="font-black text-slate-900 text-lg">อื่นๆ (Other Charges)</div>
+                        <div v-if="data.otherFeesNote" class="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">{{ data.otherFeesNote }}</div>
                     </div>
-                    <div class="col-span-2 text-center text-[10px] font-black text-slate-400 uppercase italic">Adjusted</div>
-                    <div class="col-span-3 text-right font-black text-lg italic text-slate-900">{{ data.otherFees?.toLocaleString() }}</div>
+                    <div class="col-span-2 text-center text-xs font-black text-slate-400 uppercase italic">Adjusted</div>
+                    <div class="col-span-3 text-right font-black text-2xl italic text-slate-900">{{ data.otherFees?.toLocaleString() }}</div>
                 </div>
             </template>
 
@@ -103,11 +103,11 @@ const props = defineProps(['data']);
                 <!-- Room Rent -->
                 <div class="grid grid-cols-12 gap-4 bg-white p-4 rounded-2xl border border-slate-100 items-center">
                     <div class="col-span-7">
-                        <div class="font-black text-slate-900 text-base">ค่าเช่าห้อง (Room Rent)</div>
-                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Base monthly rental fee</div>
+                        <div class="font-black text-slate-900 text-lg">ค่าเช่าห้อง (Room Rent)</div>
+                        <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Base monthly rental fee</div>
                     </div>
-                    <div class="col-span-2 text-center text-[10px] font-black text-slate-400 uppercase">Monthly</div>
-                    <div class="col-span-3 text-right font-black text-lg italic text-slate-900">{{ data.roomRent?.toLocaleString() }}</div>
+                    <div class="col-span-2 text-center text-xs font-black text-slate-400 uppercase">Monthly</div>
+                    <div class="col-span-3 text-right font-black text-2xl italic text-slate-900">{{ data.roomRent?.toLocaleString() }}</div>
                 </div>
 
                 <!-- Electricity -->
@@ -115,19 +115,19 @@ const props = defineProps(['data']);
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-400 opacity-20"></div>
                     <div class="col-span-7">
                         <div class="flex items-center gap-2">
-                            <Zap class="w-3.5 h-3.5 text-amber-500" />
-                            <div class="font-black text-slate-900 text-base">ค่าไฟฟ้า (Electricity)</div>
+                            <Zap class="w-4 h-4 text-amber-500" />
+                            <div class="font-black text-slate-900 text-lg">ค่าไฟฟ้า (Electricity)</div>
                         </div>
-                        <div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
-                            Prev: <span class="text-slate-900">{{ data.electricityPrev }}</span> | Curr: <span class="text-slate-900">{{ data.electricityCurrent }}</span>
+                        <div class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                            ครั้งก่อน (PREV): <span class="text-slate-900 text-sm">{{ data.electricityPrev }}</span> | ครั้งนี้ (CURR): <span class="text-slate-900 text-sm">{{ data.electricityCurrent }}</span>
                         </div>
                     </div>
                     <div class="col-span-2 text-center">
-                        <div class="text-base font-black text-amber-600 leading-none">{{ data.electricityUnits }}</div>
-                        <div class="text-[7px] font-black text-slate-400 uppercase tracking-tighter">Units Used</div>
+                        <div class="text-xl font-black text-amber-600 leading-none">{{ data.electricityUnits }}</div>
+                        <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter mt-1">Units Used</div>
                     </div>
-                    <div class="col-span-3 text-right font-black text-lg italic text-slate-900">
-                        <span class="text-[10px] font-bold text-slate-400 mr-2">@{{ data.electricityRate }} ฿</span>
+                    <div class="col-span-3 text-right font-black text-2xl italic text-slate-900">
+                        <span class="text-xs font-bold text-slate-400 mr-2">@{{ data.electricityRate }} ฿</span>
                         {{ data.electricityTotal?.toLocaleString() }}
                     </div>
                 </div>
@@ -137,17 +137,17 @@ const props = defineProps(['data']);
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-400 opacity-20"></div>
                     <div class="col-span-7">
                         <div class="flex items-center gap-2">
-                            <Droplets class="w-3.5 h-3.5 text-blue-500" />
-                            <div class="font-black text-slate-900 text-base">ค่าน้ำ (Water Charge)</div>
+                            <Droplets class="w-4 h-4 text-blue-500" />
+                            <div class="font-black text-slate-900 text-lg">ค่าน้ำ (Water Charge)</div>
                         </div>
-                        <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Fixed fee per occupant</div>
+                        <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Fixed fee per occupant</div>
                     </div>
                     <div class="col-span-2 text-center">
-                        <div class="text-base font-black text-blue-600 leading-none">{{ data.waterTenants }}</div>
-                        <div class="text-[7px] font-black text-slate-400 uppercase tracking-tighter">Occupants</div>
+                        <div class="text-xl font-black text-blue-600 leading-none">{{ data.waterTenants }}</div>
+                        <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter mt-1">Occupants</div>
                     </div>
-                    <div class="col-span-3 text-right font-black text-lg italic text-slate-900">
-                        <span class="text-[10px] font-bold text-slate-400 mr-2">@{{ data.waterRate }} ฿</span>
+                    <div class="col-span-3 text-right font-black text-2xl italic text-slate-900">
+                        <span class="text-xs font-bold text-slate-400 mr-2">@{{ data.waterRate }} ฿</span>
                         {{ data.waterTotal?.toLocaleString() }}
                     </div>
                 </div>
@@ -156,12 +156,12 @@ const props = defineProps(['data']);
                 <div v-if="data.internet > 0" class="grid grid-cols-12 gap-4 bg-white p-4 rounded-2xl border border-slate-100 items-center">
                     <div class="col-span-7">
                         <div class="flex items-center gap-2">
-                            <Globe class="w-3.5 h-3.5 text-indigo-500" />
-                            <div class="font-black text-slate-900 text-base">ค่าเน็ต (Internet)</div>
+                            <Globe class="w-4 h-4 text-indigo-500" />
+                            <div class="font-black text-slate-900 text-lg">ค่าเน็ต (Internet)</div>
                         </div>
                     </div>
-                    <div class="col-span-2 text-center text-[10px] font-black text-slate-400 uppercase italic">Ultra</div>
-                    <div class="col-span-3 text-right font-black text-lg italic text-slate-900">{{ data.internet?.toLocaleString() }}</div>
+                    <div class="col-span-2 text-center text-xs font-black text-slate-400 uppercase italic">Ultra</div>
+                    <div class="col-span-3 text-right font-black text-2xl italic text-slate-900">{{ data.internet?.toLocaleString() }}</div>
                 </div>
 
                 <!-- Additional Fees -->
@@ -169,11 +169,11 @@ const props = defineProps(['data']);
                     <template v-for="fee in data.additionalFees" :key="fee.id">
                         <div v-if="Number(fee.amount) > 0" class="grid grid-cols-12 gap-4 bg-white p-4 rounded-2xl border border-slate-100 items-center">
                             <div class="col-span-7">
-                                <div class="font-black text-slate-900 text-base">{{ fee.name }}</div>
-                                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Other expense</div>
+                                <div class="font-black text-slate-900 text-lg">{{ fee.name }}</div>
+                                <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Other expense</div>
                             </div>
-                            <div class="col-span-2 text-center text-[10px] font-black text-slate-400 uppercase italic">Custom</div>
-                            <div class="col-span-3 text-right font-black text-lg italic text-slate-900">{{ Number(fee.amount)?.toLocaleString() }}</div>
+                            <div class="col-span-2 text-center text-xs font-black text-slate-400 uppercase italic">Custom</div>
+                            <div class="col-span-3 text-right font-black text-2xl italic text-slate-900">{{ Number(fee.amount)?.toLocaleString() }}</div>
                         </div>
                     </template>
                 </template>
