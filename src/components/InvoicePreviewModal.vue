@@ -25,6 +25,11 @@ const copyToClipboard = (text) => {
 
 const shareInvoice = () => {
   const invoice = props.invoice;
+  let additionalText = '';
+  if (invoice.additionalFees && invoice.additionalFees.length > 0) {
+      additionalText = '\n' + invoice.additionalFees.map(f => `➕ ${f.name}: ${Number(f.amount)?.toLocaleString()} บาท`).join('\n');
+  }
+
   const text = `🏠 แจ้งค่าเช่าห้อง ${invoice.roomNumber}
 📅 ประจำเดือน ${invoice.month} ${invoice.year}
 
@@ -34,7 +39,7 @@ const shareInvoice = () => {
 รายละเอียด:
 🏠 ค่าเช่า: ${invoice.roomRent?.toLocaleString()} บาท
 ⚡ ค่าไฟ: ${invoice.electricityTotal?.toLocaleString()} บาท (${invoice.electricityUnits} หน่วย)
-💧 ค่าน้ำ: ${invoice.waterTotal?.toLocaleString()} บาท${invoice.internet > 0 ? '\n📶 ค่าเน็ต: ' + invoice.internet?.toLocaleString() + ' บาท' : ''}
+💧 ค่าน้ำ: ${invoice.waterTotal?.toLocaleString()} บาท${invoice.internet > 0 ? '\n📶 ค่าเน็ต: ' + invoice.internet?.toLocaleString() + ' บาท' : ''}${additionalText}
 
 💳 ชำระเงินที่: ${invoice.bankInfo}
 ⏰ กรุณาชำระภายในวันที่ 5`;

@@ -1,11 +1,31 @@
 <script setup>
-import { Settings as SettingsIcon, Building, MapPin, Phone, CreditCard, Zap, Droplets, Globe, CheckCircle2 } from 'lucide-vue-next';
+import { Settings as SettingsIcon, Building, MapPin, Phone, CreditCard, Zap, Droplets, Globe, CheckCircle2, Plus, Trash2 } from 'lucide-vue-next';
 
 const props = defineProps(['modelValue']);
 const emit = defineEmits(['update:modelValue']);
 
 const updateSettings = (key, value) => {
   emit('update:modelValue', { ...props.modelValue, [key]: value });
+};
+
+const addAdditionalFee = () => {
+    const fees = props.modelValue.additionalFees ? [...props.modelValue.additionalFees] : [];
+    fees.push({ id: Date.now().toString(), name: '', amount: 0 });
+    updateSettings('additionalFees', fees);
+};
+
+const updateAdditionalFee = (index, key, value) => {
+    const fees = [...(props.modelValue.additionalFees || [])];
+    if (fees[index]) {
+        fees[index][key] = value;
+        updateSettings('additionalFees', fees);
+    }
+};
+
+const removeAdditionalFee = (index) => {
+    const fees = [...(props.modelValue.additionalFees || [])];
+    fees.splice(index, 1);
+    updateSettings('additionalFees', fees);
 };
 </script>
 
@@ -129,6 +149,56 @@ const updateSettings = (key, value) => {
                                 class="w-full bg-slate-50 border-0 rounded-2xl p-4 font-black text-2xl focus:ring-4 focus:ring-indigo-500/10 transition-all pr-12" 
                             />
                             <span class="absolute right-4 top-1/2 -translate-y-1/2 font-black text-xs text-slate-300">฿</span>
+                        </div>
+                    </div>
+
+                    <!-- Additional Fees -->
+                    <div class="pt-6 border-t border-slate-50 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <Plus class="w-4 h-4 text-green-500" />
+                                ค่าใช้จ่ายอื่นๆ (ตั้งต้น)
+                            </label>
+                            <button 
+                                @click="addAdditionalFee"
+                                class="bg-green-50 text-green-700 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase flex items-center gap-1 hover:bg-green-100 transition-colors"
+                            >
+                                <Plus class="w-3 h-3" />
+                                เพิ่มรายการ
+                            </button>
+                        </div>
+                        
+                        <div v-if="modelValue.additionalFees && modelValue.additionalFees.length > 0" class="space-y-4">
+                            <div v-for="(fee, index) in modelValue.additionalFees" :key="fee.id" class="flex gap-4 items-center bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                                <div class="flex-1">
+                                    <input 
+                                        type="text" 
+                                        :value="fee.name"
+                                        @input="updateAdditionalFee(index, 'name', $event.target.value)"
+                                        class="w-full bg-white border-0 rounded-xl p-3 font-bold focus:ring-2 focus:ring-green-500/10 transition-all text-sm" 
+                                        placeholder="ชื่อรายการ เช่น ค่าทำความสะอาด"
+                                    />
+                                </div>
+                                <div class="w-24 lg:w-32 relative">
+                                    <input 
+                                        type="number" 
+                                        :value="fee.amount"
+                                        @input="updateAdditionalFee(index, 'amount', Number($event.target.value))"
+                                        class="w-full bg-white border-0 rounded-xl p-3 font-black focus:ring-2 focus:ring-green-500/10 transition-all pr-8 text-sm" 
+                                        placeholder="0"
+                                    />
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 font-black text-[10px] text-slate-300">฿</span>
+                                </div>
+                                <button 
+                                    @click="removeAdditionalFee(index)"
+                                    class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors shrink-0"
+                                >
+                                    <Trash2 class="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                        <div v-else class="text-center py-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                            <p class="text-[10px] font-bold text-slate-400">ยังไม่มีรายการค่าใช้จ่ายอื่นๆ</p>
                         </div>
                     </div>
                 </div>

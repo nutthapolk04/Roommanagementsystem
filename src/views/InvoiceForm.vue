@@ -17,7 +17,8 @@ const formData = ref({
   year: new Date().getFullYear().toString(),
   electricityPrev: 0,
   electricityCurrent: 0,
-  internet: 0
+  internet: 0,
+  additionalFees: []
 });
 
 const selectedTenant = computed(() => {
@@ -39,9 +40,13 @@ const waterTotal = computed(() => {
   return selectedTenant.value.waterTenants * props.ownerSettings.defaultWaterRate;
 });
 
+const additionalFeesTotal = computed(() => {
+    return formData.value.additionalFees?.reduce((sum, fee) => sum + Number(fee.amount), 0) || 0;
+});
+
 const grandTotal = computed(() => {
   if (!selectedTenant.value) return 0;
-  return Number(selectedTenant.value.roomRent) + electricityTotal.value + waterTotal.value + Number(formData.value.internet);
+  return Number(selectedTenant.value.roomRent) + electricityTotal.value + waterTotal.value + Number(formData.value.internet) + additionalFeesTotal.value;
 });
 
 const previewData = computed(() => {
@@ -59,6 +64,7 @@ const previewData = computed(() => {
     waterTotal: waterTotal.value,
     grandTotal: grandTotal.value,
     internet: formData.value.internet,
+    additionalFees: formData.value.additionalFees,
     electricityRate: props.ownerSettings.defaultElectricityRate,
     waterRate: props.ownerSettings.defaultWaterRate,
     createdAt: Date.now(),
@@ -73,6 +79,7 @@ watch(() => formData.value.selectedTenantId, (newVal) => {
     formData.value.electricityPrev = selectedTenant.value.electricityPrev;
     formData.value.electricityCurrent = selectedTenant.value.electricityPrev;
     formData.value.internet = props.ownerSettings.defaultInternet;
+    formData.value.additionalFees = (props.ownerSettings.additionalFees || []).map(fee => ({ ...fee }));
   }
 });
 
@@ -186,6 +193,29 @@ const handleSave = () => {
                     v-model.number="formData.internet"
                     class="w-full bg-white/50 border-2 border-indigo-100 rounded-xl p-2 font-black text-indigo-900 focus:bg-white transition-all" 
                    />
+                 </div>
+              </div>
+
+              <!-- Additional Fees from Settings -->
+              <div v-if="formData.additionalFees && formData.additionalFees.length > 0" class="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 space-y-4">
+                 <label class="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                    <PlusCircle class="w-4 h-4 text-green-600" />
+                    ค่าใช้จ่ายอื่นๆ
+                 </label>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div v-for="(fee, index) in formData.additionalFees" :key="fee.id" class="flex gap-3 items-center">
+                        <div class="flex-1 bg-white border border-slate-100 rounded-xl p-3 text-sm font-bold text-slate-600 shadow-sm truncate">
+                            {{ fee.name }}
+                        </div>
+                        <div class="w-32 relative">
+                            <input 
+                                type="number" 
+                                v-model.number="fee.amount"
+                                class="w-full bg-white border-2 border-slate-100 rounded-xl p-3 font-black text-slate-900 focus:border-green-400 focus:ring-0 transition-all pr-8" 
+                            />
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 font-black text-[10px] text-slate-400">฿</span>
+                        </div>
+                    </div>
                  </div>
               </div>
 
