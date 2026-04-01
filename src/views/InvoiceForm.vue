@@ -28,7 +28,15 @@ const selectedTenant = computed(() => {
 
 const electricityUnits = computed(() => {
   if (!selectedTenant.value) return 0;
-  return Math.max(0, formData.value.electricityCurrent - formData.value.electricityPrev);
+  const current = Number(formData.value.electricityCurrent) || 0;
+  const prev = Number(formData.value.electricityPrev) || 0;
+  
+  if (current >= prev) {
+    return current - prev;
+  } else {
+    // Meter rollover logic at 10000 (since max is 9999.9 -> 0000.0)
+    return parseFloat(((10000 - prev) + current).toFixed(2));
+  }
 });
 
 const electricityTotal = computed(() => {
