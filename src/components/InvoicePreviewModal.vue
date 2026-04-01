@@ -27,7 +27,10 @@ const shareInvoice = () => {
   const invoice = props.invoice;
   let additionalText = '';
   if (invoice.additionalFees && invoice.additionalFees.length > 0) {
-      additionalText = '\n' + invoice.additionalFees.map(f => `➕ ${f.name}: ${Number(f.amount)?.toLocaleString()} บาท`).join('\n');
+      const validFees = invoice.additionalFees.filter(f => Number(f.amount) > 0);
+      if (validFees.length > 0) {
+          additionalText = '\n' + validFees.map(f => `➕ ${f.name}: ${Number(f.amount)?.toLocaleString()} บาท`).join('\n');
+      }
   }
 
   const text = `🏠 แจ้งค่าเช่าห้อง ${invoice.roomNumber}

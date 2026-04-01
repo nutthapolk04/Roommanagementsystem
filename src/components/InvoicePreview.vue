@@ -166,14 +166,16 @@ const props = defineProps(['data']);
 
                 <!-- Additional Fees -->
                 <template v-if="data.additionalFees && data.additionalFees.length > 0">
-                    <div v-for="fee in data.additionalFees" :key="fee.id" class="grid grid-cols-12 gap-4 bg-white p-4 rounded-2xl border border-slate-100 items-center">
-                        <div class="col-span-7">
-                            <div class="font-black text-slate-900 text-base">{{ fee.name }}</div>
-                            <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Other expense</div>
+                    <template v-for="fee in data.additionalFees" :key="fee.id">
+                        <div v-if="Number(fee.amount) > 0" class="grid grid-cols-12 gap-4 bg-white p-4 rounded-2xl border border-slate-100 items-center">
+                            <div class="col-span-7">
+                                <div class="font-black text-slate-900 text-base">{{ fee.name }}</div>
+                                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Other expense</div>
+                            </div>
+                            <div class="col-span-2 text-center text-[10px] font-black text-slate-400 uppercase italic">Custom</div>
+                            <div class="col-span-3 text-right font-black text-lg italic text-slate-900">{{ Number(fee.amount)?.toLocaleString() }}</div>
                         </div>
-                        <div class="col-span-2 text-center text-[10px] font-black text-slate-400 uppercase italic">Custom</div>
-                        <div class="col-span-3 text-right font-black text-lg italic text-slate-900">{{ Number(fee.amount)?.toLocaleString() }}</div>
-                    </div>
+                    </template>
                 </template>
             </template>
         </div>
